@@ -102,21 +102,21 @@ export function LoginForm({
 
   return (
     <form
-      className="w-full max-w-sm rounded-lg border border-zinc-200 bg-white p-6 shadow-sm"
+      className="w-full max-w-sm rounded-lg border border-zinc-200 bg-white p-6 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900"
       onSubmit={submit}
       noValidate
       aria-label="Login form"
     >
       <div className="space-y-1">
-        <h2 className="text-xl font-semibold text-zinc-950">Welcome back</h2>
-        <p className="text-sm leading-6 text-zinc-600">
+        <h2 className="text-xl font-semibold text-zinc-950 dark:text-zinc-50">Welcome back</h2>
+        <p className="text-sm leading-6 text-zinc-600 dark:text-zinc-300">
           Sign in with your email and password.
         </p>
       </div>
 
       <div className="mt-6 space-y-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium text-zinc-900" htmlFor={emailId}>
+          <label className="text-sm font-medium text-zinc-900 dark:text-zinc-100" htmlFor={emailId}>
             Email
           </label>
           <input
@@ -126,11 +126,11 @@ export function LoginForm({
             disabled={isDisabled}
             aria-invalid={errors.email ? "true" : "false"}
             aria-describedby={errors.email ? `${emailId}-error` : undefined}
-            className="h-10 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-500 focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/10"
+            className="h-10 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-500 focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/10 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:disabled:bg-zinc-800 dark:disabled:text-zinc-500 dark:focus:border-zinc-200 dark:focus:ring-zinc-200/10"
             {...register("email")}
           />
           {errors.email?.message ? (
-            <p className="text-sm text-red-600" id={`${emailId}-error`}>
+            <p className="text-sm text-red-600 dark:text-red-400" id={`${emailId}-error`}>
               {errors.email.message}
             </p>
           ) : null}
@@ -138,7 +138,7 @@ export function LoginForm({
 
         <div className="space-y-2">
           <label
-            className="text-sm font-medium text-zinc-900"
+            className="text-sm font-medium text-zinc-900 dark:text-zinc-100"
             htmlFor={passwordId}
           >
             Password
@@ -152,11 +152,11 @@ export function LoginForm({
             aria-describedby={
               errors.password ? `${passwordId}-error` : undefined
             }
-            className="h-10 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-500 focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/10"
+            className="h-10 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-500 focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/10 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:disabled:bg-zinc-800 dark:disabled:text-zinc-500 dark:focus:border-zinc-200 dark:focus:ring-zinc-200/10"
             {...register("password")}
           />
           {errors.password?.message ? (
-            <p className="text-sm text-red-600" id={`${passwordId}-error`}>
+            <p className="text-sm text-red-600 dark:text-red-400" id={`${passwordId}-error`}>
               {errors.password.message}
             </p>
           ) : null}
@@ -165,7 +165,7 @@ export function LoginForm({
 
       {errors.root?.message ? (
         <p
-          className="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+          className="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/70 dark:bg-red-950/40 dark:text-red-300"
           role="alert"
         >
           {errors.root.message}
@@ -174,7 +174,7 @@ export function LoginForm({
 
       {successMessage ? (
         <p
-          className="mt-4 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
+          className="mt-4 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:border-emerald-900/70 dark:bg-emerald-950/40 dark:text-emerald-300"
           role="status"
         >
           {successMessage}
@@ -182,7 +182,7 @@ export function LoginForm({
       ) : null}
 
       <button
-        className="mt-6 h-10 w-full rounded-md bg-zinc-950 px-4 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400"
+        className="mt-6 h-10 w-full rounded-md bg-zinc-950 px-4 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200 dark:disabled:bg-zinc-700 dark:disabled:text-zinc-400"
         disabled={isDisabled}
         type="submit"
       >
