@@ -24,7 +24,10 @@ const eslintConfig = defineConfig([
 		settings: {
 			'boundaries/elements': [
 				{ type: 'app', pattern: 'app/**' },
+				{ type: 'widgets', pattern: 'widgets/*', capture: ['slice'] },
 				{ type: 'features', pattern: 'features/*', capture: ['slice'] },
+				{ type: 'entities', pattern: 'entities/*', capture: ['slice'] },
+				{ type: 'shared', pattern: 'shared/**' },
 				{ type: 'stories', pattern: 'stories/**' },
 			],
 		},
@@ -34,14 +37,35 @@ const eslintConfig = defineConfig([
 				{
 					default: 'disallow',
 					rules: [
-						{ from: { type: 'app' }, allow: { to: { type: 'features' } } },
 						{
-							from: { type: 'stories' },
-							allow: { to: { type: 'features' } },
+							from: { type: 'app' },
+							allow: {
+								to: { type: ['widgets', 'features', 'entities', 'shared'] },
+							},
+						},
+						{
+							from: { type: 'widgets' },
+							allow: {
+								to: { type: ['widgets', 'features', 'entities', 'shared'] },
+							},
 						},
 						{
 							from: { type: 'features' },
-							disallow: [{ to: { type: 'app' } }, { to: { type: 'stories' } }],
+							allow: { to: { type: ['features', 'entities', 'shared'] } },
+						},
+						{
+							from: { type: 'entities' },
+							allow: { to: { type: ['entities', 'shared'] } },
+						},
+						{
+							from: { type: 'shared' },
+							allow: { to: { type: 'shared' } },
+						},
+						{
+							from: { type: 'stories' },
+							allow: {
+								to: { type: ['widgets', 'features', 'entities', 'shared'] },
+							},
 						},
 					],
 				},
@@ -55,9 +79,16 @@ const eslintConfig = defineConfig([
 								'@/features/*/ui/*',
 								'@/features/*/model/*',
 								'@/features/*/lib/*',
+								'@/widgets/*/ui/*',
+								'@/widgets/*/model/*',
+								'@/widgets/*/lib/*',
+								'@/entities/*/ui/*',
+								'@/entities/*/model/*',
+								'@/entities/*/lib/*',
+								'@/shared/*',
 							],
 							message:
-								"Import feature slices through their public API, for example '@/features/auth'.",
+								"Import feature, widget, and entity slices through their public API, for example '@/features/auth', '@/widgets/login-page', or '@/entities/user', and import shared through '@/shared'.",
 						},
 					],
 				},
