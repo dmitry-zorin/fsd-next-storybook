@@ -1,14 +1,15 @@
-import type { Preview } from '@storybook/nextjs-vite'
 import {
 	DocsContainer,
 	type DocsContainerProps,
 } from '@storybook/addon-docs/blocks'
+import type { Preview } from '@storybook/nextjs-vite'
 import { useEffect, type ReactNode } from 'react'
 import { useDarkMode } from 'storybook-dark-mode'
-
-import { ThemeProvider, useTheme } from '@/features/theme'
 import '../app/globals.css'
+import { ThemeProvider, useTheme } from '../features/theme'
 import { storybookDarkTheme, storybookLightTheme } from './themes'
+
+const storybookThemeStorageKey = 'fsd-next-storybook-storybook-theme'
 
 function StorybookThemeSync() {
 	const isDark = useDarkMode()
@@ -23,7 +24,7 @@ function StorybookThemeSync() {
 
 function StorybookThemeProvider({ children }: { children: ReactNode }) {
 	return (
-		<ThemeProvider>
+		<ThemeProvider storageKey={storybookThemeStorageKey}>
 			<StorybookThemeSync />
 			<div className="bg-background text-foreground p-6 transition-colors">
 				{children}
@@ -62,7 +63,6 @@ const preview: Preview = {
 		},
 		docs: {
 			container: ThemedDocsContainer,
-			theme: storybookLightTheme,
 		},
 		controls: {
 			matchers: {

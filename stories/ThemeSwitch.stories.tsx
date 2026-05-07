@@ -18,19 +18,21 @@ type Story = StoryObj<typeof ThemeSwitch>
 
 export const Default: Story = {}
 
-export const ToggleTheme: Story = {
+export const SelectTheme: Story = {
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement)
-		const themeSwitch = canvas.getByRole('switch', {
-			name: /toggle dark theme/i,
+		const darkOption = canvas.getByRole('radio', {
+			name: /dark/i,
 		})
-		const initialState = themeSwitch.getAttribute('aria-checked')
+		const systemOption = canvas.getByRole('radio', {
+			name: /system/i,
+		})
 
-		await userEvent.click(themeSwitch)
+		await userEvent.click(darkOption)
+		await expect(darkOption).toHaveAttribute('aria-checked', 'true')
 
-		await expect(themeSwitch).toHaveAttribute(
-			'aria-checked',
-			initialState === 'true' ? 'false' : 'true',
-		)
+		await userEvent.click(systemOption)
+
+		await expect(systemOption).toHaveAttribute('aria-checked', 'true')
 	},
 }

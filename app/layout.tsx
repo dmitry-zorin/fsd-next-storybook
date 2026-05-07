@@ -1,6 +1,5 @@
-import type { Metadata } from 'next'
-import Script from 'next/script'
 import { ThemeProvider, themeBootScript } from '@/features/theme'
+import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -17,11 +16,7 @@ export default function RootLayout({
 	return (
 		<html lang="en" className="h-full antialiased" suppressHydrationWarning>
 			<body className="flex min-h-full flex-col">
-				<Script
-					id="theme-boot"
-					strategy="beforeInteractive"
-					dangerouslySetInnerHTML={{ __html: themeBootScript }}
-				/>
+				<script id="theme-boot">{themeBootScript}</script>
 				<ThemeProvider>{children}</ThemeProvider>
 			</body>
 		</html>

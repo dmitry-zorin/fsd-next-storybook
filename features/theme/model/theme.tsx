@@ -10,119 +10,128 @@ import {
 	type ReactNode,
 } from 'react'
 
-export type ThemeMode = 'system' | 'light' | 'dark'
-export type ResolvedTheme = 'light' | 'dark'
+export type Theme = 'light' | 'dark'
+export type ThemeMode = Theme | 'system'
 
-const storageKey = 'fsd-next-storybook-theme'
+const defaultStorageKey = 'fsd-next-storybook-theme'
 const themeModeChangeEvent = 'fsd-theme-mode-change'
+
+const subscribeToSystemTheme = (onStoreChange: () => void) => {
+	const mediaQueryList = matchMedia('(prefers-color-scheme: dark)')
+	mediaQueryList.addEventListener('change', onStoreChange)
+	return () => {
+		mediaQueryList.removeEventListener('change', onStoreChange)
+	}
+}
+
+const getSystemThemeSnapshot = (): Theme => {
+	const mediaQueryList = matchMedia('(prefers-color-scheme: dark)')
+	return mediaQueryList.matches ? 'dark' : 'light'
+}
+
+const useSystemTheme = () => {
+	return useSyncExternalStore<Theme>(
+		subscribeToSystemTheme,
+		getSystemThemeSnapshot,
+		() => 'light',
+	)
+}
+
+const useThemeMode = (storageKey: string, changeEvent: string) => {
+	const subscribeToStoredMode = useCallback(
+		(onStoreChange: () => void) => {
+			addEventListener('storage', onStoreChange)
+			addEventListener(changeEvent, onStoreChange)
+			return () => {
+				removeEventListener('storage', onStoreChange)
+				removeEventListener(changeEvent, onStoreChange)
+			}
+		},
+		[changeEvent],
+	)
+
+	const getThemeModeSnapshot = useCallback((): ThemeMode => {
+		try {
+			const storedMode = localStorage.getItem(storageKey)
+			return storedMode === 'light' || storedMode === 'dark' ?
+					storedMode
+				:	'system'
+		} catch {
+			return 'system'
+		}
+	}, [storageKey])
+
+	return useSyncExternalStore<ThemeMode>(
+		subscribeToStoredMode,
+		getThemeModeSnapshot,
+		() => 'system',
+	)
+}
+
+const applyTheme = (theme: Theme) => {
+	document.documentElement.classList.toggle('dark', theme === 'dark')
+	document.documentElement.style.colorScheme = theme
+}
 
 interface ThemeContextValue {
 	mode: ThemeMode
-	resolvedTheme: ResolvedTheme
+	theme: Theme
 	setMode: (mode: ThemeMode) => void
 	toggleTheme: () => void
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null)
 
-const getSystemTheme = (): ResolvedTheme => {
-	if (typeof window === 'undefined') {
-		return 'light'
-	}
-
-	return window.matchMedia('(prefers-color-scheme: dark)').matches ?
-			'dark'
-		:	'light'
+interface ThemeProviderProps {
+	children: ReactNode
+	storageKey?: string
 }
 
-const getStoredMode = (): ThemeMode => {
-	if (typeof window === 'undefined') {
-		return 'system'
-	}
+export function ThemeProvider({
+	children,
+	storageKey = defaultStorageKey,
+}: ThemeProviderProps) {
+	const changeEvent =
+		storageKey === defaultStorageKey ? themeModeChangeEvent : (
+			`${themeModeChangeEvent}:${storageKey}`
+		)
 
-	let storedMode: string | null = null
+	const mode = useThemeMode(storageKey, changeEvent)
+	const systemTheme = useSystemTheme()
 
-	try {
-		storedMode = window.localStorage.getItem(storageKey)
-	} catch {
-		return 'system'
-	}
-
-	return storedMode === 'light' || storedMode === 'dark' ? storedMode : 'system'
-}
-
-const applyTheme = (theme: ResolvedTheme) => {
-	document.documentElement.classList.toggle('dark', theme === 'dark')
-	document.documentElement.style.colorScheme = theme
-}
-
-const subscribeToSystemTheme = (onStoreChange: () => void) => {
-	const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-
-	mediaQuery.addEventListener('change', onStoreChange)
-
-	return () => {
-		mediaQuery.removeEventListener('change', onStoreChange)
-	}
-}
-
-const subscribeToThemeMode = (onStoreChange: () => void) => {
-	window.addEventListener('storage', onStoreChange)
-	window.addEventListener(themeModeChangeEvent, onStoreChange)
-
-	return () => {
-		window.removeEventListener('storage', onStoreChange)
-		window.removeEventListener(themeModeChangeEvent, onStoreChange)
-	}
-}
-
-const getServerSystemTheme = (): ResolvedTheme => 'light'
-const getServerThemeMode = (): ThemeMode => 'system'
-
-export function ThemeProvider({ children }: { children: ReactNode }) {
-	const mode = useSyncExternalStore(
-		subscribeToThemeMode,
-		getStoredMode,
-		getServerThemeMode,
-	)
-	const systemTheme = useSyncExternalStore(
-		subscribeToSystemTheme,
-		getSystemTheme,
-		getServerSystemTheme,
-	)
-
-	const resolvedTheme = mode === 'system' ? systemTheme : mode
+	const theme = mode === 'system' ? systemTheme : mode
 
 	useEffect(() => {
-		applyTheme(resolvedTheme)
-	}, [resolvedTheme])
+		applyTheme(theme)
+	}, [theme])
 
-	const setMode = useCallback((nextMode: ThemeMode) => {
-		try {
-			if (nextMode === 'system') {
-				window.localStorage.removeItem(storageKey)
-			} else {
-				window.localStorage.setItem(storageKey, nextMode)
-			}
-		} catch {
-			// Storage may be unavailable in private or embedded contexts.
-		}
+	const setMode = useCallback(
+		(nextMode: ThemeMode) => {
+			try {
+				if (nextMode === 'system') {
+					localStorage.removeItem(storageKey)
+				} else {
+					localStorage.setItem(storageKey, nextMode)
+				}
+			} catch {}
 
-		window.dispatchEvent(new Event(themeModeChangeEvent))
-	}, [])
+			dispatchEvent(new Event(changeEvent))
+		},
+		[changeEvent, storageKey],
+	)
 
 	const toggleTheme = useCallback(() => {
-		setMode(resolvedTheme === 'dark' ? 'light' : 'dark')
-	}, [resolvedTheme, setMode])
+		setMode(theme === 'dark' ? 'light' : 'dark')
+	}, [theme, setMode])
 
 	const value = useMemo(
 		() => ({
 			mode,
-			resolvedTheme,
+			theme,
 			setMode,
 			toggleTheme,
 		}),
-		[mode, resolvedTheme, setMode, toggleTheme],
+		[mode, theme, setMode, toggleTheme],
 	)
 
 	return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
@@ -130,23 +139,25 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
 export function useTheme() {
 	const context = useContext(ThemeContext)
-
 	if (!context) {
 		throw new Error('useTheme must be used within ThemeProvider.')
 	}
-
 	return context
 }
 
-export const themeBootScript = `
-(() => {
-  try {
-    const storageKey = '${storageKey}';
-    const storedMode = window.localStorage.getItem(storageKey);
-    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    const theme = storedMode === 'light' || storedMode === 'dark' ? storedMode : systemTheme;
-    document.documentElement.classList.toggle('dark', theme === 'dark');
-    document.documentElement.style.colorScheme = theme;
-  } catch {}
-})();
-`
+const applyInitialTheme = (storageKey: string) => {
+	try {
+		const storedMode = localStorage.getItem(storageKey)
+
+		const systemTheme =
+			matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+
+		const theme =
+			storedMode === 'light' || storedMode === 'dark' ? storedMode : systemTheme
+
+		document.documentElement.classList.toggle('dark', theme === 'dark')
+		document.documentElement.style.colorScheme = theme
+	} catch {}
+}
+
+export const themeBootScript = `(${applyInitialTheme.toString()})('${defaultStorageKey}')`
